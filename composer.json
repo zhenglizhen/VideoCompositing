@@ -1,5 +1,5 @@
 {
-    "name": "zlz/videocompositing",
+    "name": "videocompositing",
     "description": "视频合成SDK",
     "type": "library",
     "require": {
