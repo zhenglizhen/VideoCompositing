@@ -1,0 +1,20 @@
+{
+    "name": "videocompositing",
+    "description": "视频合成SDK",
+    "type": "library",
+    "require": {
+        "php": "7.3.4"
+    },
+    "autoload": {
+        "psr-4": {
+            "VideoCompositing\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "zlz",
+            "email": "3289969465@qq.com"
+        }
+    ],
+    "minimum-stability": "dev"
+}
