@@ -9,9 +9,12 @@
 2.Composer
 
 安装
-composer require caitui/videocompositing
+  composer require caitui/videocompositing
+
 用法
-快手
+
+  //快手
+
 use VideoCompositing\Client;
 
     public function __construct()
