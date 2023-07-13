@@ -128,8 +128,6 @@ class KuaiShou
             'Content-Type' => 'video/mp4'
         ];
         $res = Client::post($url, $body, $header);
-        var_dump('fragment_id:' . $params['chunk_number']);
-        var_dump(json_decode($res->body, true));
 //        return json_decode($res->body, true);
     }
 
@@ -137,9 +135,6 @@ class KuaiShou
     {
         $url = 'http://' . $params['endpoint'] . '/api/upload/complete?upload_token=' . $params['uploadToken'] . '&fragment_count=' . $params['chunk_number'];
         $res = Client::post($url, []);
-        var_dump('fragment_count:' . $params['chunk_number']);
-        var_dump(json_decode($res->body, true));
-        die;
         return json_decode($res->body, true);
     }
 
@@ -153,8 +148,7 @@ class KuaiShou
             'Content-Type' => 'video/mp4'
         ];
         $res = Client::post($url, $body, $header);
-        var_dump(json_decode($res->body, true));
-//        return json_decode($res->body, true);
+        return json_decode($res->body, true);
     }
 
     public function resumeVideo($params)
