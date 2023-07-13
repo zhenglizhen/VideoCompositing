@@ -68,28 +68,11 @@ final class Client
         $request = new Request('POST', $url, $headers, $body);
         return self::sendRequest($request);
     }
-
-    private static function userAgent()
-    {
-        $sdkInfo = "QiniuPHP/" . Config::SDK_VER;
-
-        $systemInfo = php_uname("s");
-        $machineInfo = php_uname("m");
-
-        $envInfo = "($systemInfo/$machineInfo)";
-
-        $phpVer = phpversion();
-
-        $ua = "$sdkInfo $envInfo PHP/$phpVer";
-        return $ua;
-    }
-
     public static function sendRequest($request)
     {
         $t1 = microtime(true);
         $ch = curl_init();
         $options = array(
-            CURLOPT_USERAGENT => self::userAgent(),
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_SSL_VERIFYPEER => false,
             CURLOPT_SSL_VERIFYHOST => false,
