@@ -1,5 +1,5 @@
 {
-    "name": "videocompositing",
+    "name": "caitui/videocompositing",
     "description": "视频合成SDK",
     "type": "library",
     "require": {
