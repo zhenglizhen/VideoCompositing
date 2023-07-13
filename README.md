@@ -1,18 +1,18 @@
-###已实现
+已实现
 * 网站应用上进行发布视频到快手
-###支持平台
+  支持平台
 * 快手
 * 抖音
-###要求
-1.PHP>=7.3
+  要求
+  1.PHP>=7.3
 
 2.Composer
 
-###安装
-    composer require caitui/videocompositing
-###用法
-####快手
-    use VideoCompositing\Client;
+安装
+composer require caitui/videocompositing
+用法
+快手
+use VideoCompositing\Client;
 
     public function __construct()
     {
