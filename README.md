@@ -1,21 +1,18 @@
-已实现
+###已实现
 * 网站应用上进行发布视频到快手
-  支持平台
+###支持平台
 * 快手
 * 抖音
-  要求
-  1.PHP>=7.3
+* 微信公众号
+###要求
+1.PHP>=7.3
 
 2.Composer
 
-安装
-  composer require caitui/videocompositing
-
-用法
-
-  //快手
-
-use VideoCompositing\Client;
+###安装
+    composer require caitui/videocompositing
+###用法（快手）
+    use VideoCompositing\Client;
 
     public function __construct()
     {
@@ -129,4 +126,40 @@ use VideoCompositing\Client;
             'accessToken' => $accessToken
         ];
         $video->getVideo($params);
+    }
+
+###用法（公众号）
+    use VideoCompositing\Client;
+
+    public function __construct()
+    {
+        $this->appName = 'wechat';//应用名称
+        $this->appId = '**';//APPID
+        $this->appSecret = '**';//秘钥
+    }
+    public function getAccessToken()
+    {
+        $client = new Client($this->appName);
+        $params = [
+            'appid' => $this->appId,
+            'secret' => $this->appSecret,
+        ];
+        $res = $client->getAccessToken($params);
+    }
+    //发布内容
+    public function createContent()
+    {
+        $client = new Client($this->appName);
+        $params = [
+            'access_token' => '****',
+            'media' => '***',//封面图
+            'content'=>'****',//内容
+            'title'=>'测试标题',//标题
+            'author'=>'',//作者
+            'digest'=>'',//图文消息的摘要，仅有单图文消息才有摘要，多图文此处为空。如果本字段为没有填写，则默认抓取正文前54个字。
+            'content_source_url'=>'',//图文消息的原文地址，即点击“阅读原文”后的URL
+            'need_open_comment'=>1,//是否打开评论，0不打开(默认)，1打开
+            'only_fans_can_comment'=>0//是否粉丝才可评论，0所有人可评论(默认)，1粉丝才可评论
+        ];
+        $res = $client->createContent($params);
     }
