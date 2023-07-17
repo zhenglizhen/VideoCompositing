@@ -4,6 +4,7 @@ namespace VideoCompositing;
 
 use VideoCompositing\Application\DouYin;
 use VideoCompositing\Application\KuaiShou;
+use VideoCompositing\Application\WeChat;
 
 class Client
 {
@@ -47,6 +48,8 @@ class Client
                 break;
             case 'douyin':
                 return (new DouYin())->getAccessToken($params);
+            case 'wechat':
+                return (new WeChat())->getAccessToken($params);
             default:
                 return '正在开发中';
         }
@@ -73,7 +76,24 @@ class Client
     }
 
     /**
-     * 刷新token 有效期
+     * 获取视频
+     * @param $params
+     * @return mixed|string
+     */
+    public function getVideo($params)
+    {
+        switch ($this->appName) {
+            case 'kuaishou':
+                return (new KuaiShou())->getVideo($params);
+            case 'douyin':
+                return (new DouYin())->getVideo($params);
+            default:
+                return '正在开发中';
+        }
+    }
+
+    /**
+     * 快手刷新token 有效期
      * @return mixed|string
      */
     public function refreshAccessToken()
@@ -112,16 +132,6 @@ class Client
     }
 
     /**
-     * 快手获取视频
-     * @param $params
-     * @return mixed|string
-     */
-    public function getVideo($params)
-    {
-        return (new KuaiShou())->getVideo($params);
-    }
-
-    /**
      * 抖音创建图文
      * @param $params
      * @return mixed|string
@@ -148,5 +158,36 @@ class Client
     public function createVideo($params)
     {
         return (new DouYin())->createVideo($params);
+    }
+
+    /**
+     * 微信公众号创建内容
+     * @param $params
+     */
+    public function createContent($params)
+    {
+        if (!isset($params['access_token']) || empty($params['access_token'])) {
+            return 'access_token不能为空';
+        }
+        if (!isset($params['title']) || empty($params['title'])) {
+            return 'title不能为空';
+        }
+        if (!isset($params['content']) || empty($params['content'])) {
+            return 'content不能为空';
+        }
+        if (!isset($params['media']) || empty($params['media'])) {
+            return 'media不能为空';
+        }
+
+        //上传封面图
+        $res=(new WeChat())->uploadMedia($params);
+        $params['thumb_media_id']=$res['media_id'];//封面图的media_id
+
+        //创建草稿
+        $res=(new WeChat())->createDraft($params);
+        $params['media_id']=$res['media_id'];//草稿的media_id
+
+        $res=(new WeChat())->publish($params);
+        return $res;
     }
 }
