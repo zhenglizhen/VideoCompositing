@@ -165,11 +165,8 @@ class DouYin
             'access-token' => $params['accessToken']
         ];
         $res = Client::post($url, [], $header);
-//        var_dump('fragment_id:' . $params['chunk_number']);
-//        var_dump(json_decode($res->body, true));
         $res = (json_decode($res->body, true));
         return $res['upload_id'];
-//        return json_decode($res->body, true);
     }
 
     /**
@@ -178,7 +175,7 @@ class DouYin
      */
     public function distributeVideo($params)
     {
-        $url = Config::DouYin_HOST . '/api/douyin/v1/video/upload_video_part/?open_id=' . $params['openId'];
+        $url = Config::DouYin_HOST . '/api/douyin/v1/video/upload_video_part/?open_id=' . $params['openId'] . '&part_number=' . $params['part_number'] . '&upload_id=' . $params['upload_id'];
         $body = [
             'video' => $params['video']
         ];
@@ -186,9 +183,6 @@ class DouYin
             'access-token' => $params['accessToken']
         ];
         $res = Client::post($url, $body, $header);
-//        var_dump('fragment_id:' . $params['chunk_number']);
-//        var_dump(json_decode($res->body, true));
-//        return json_decode($res->body, true);
     }
 
     /**
@@ -204,8 +198,6 @@ class DouYin
             'access-token' => $params['accessToken']
         ];
         $res = Client::post($url, $body, $header);
-//        var_dump('fragment_id:' . $params['chunk_number']);
-//        var_dump(json_decode($res->body, true));
         return json_decode($res->body, true);
     }
 
@@ -233,6 +225,16 @@ class DouYin
             'access-token' => $params['accessToken']
         ];
         $res = Client::POST($url, $header, $body);
+        return json_decode($res->body, true);
+    }
+
+    public function getVideo($params)
+    {
+        if (!isset($params['openId']) || empty($params['openId'])) {
+            return 'openId不能为空';
+        }
+        $url = Config::DouYin_HOST . '/api/douyin/v1/video/video_list/?open_id=' . $params['openId'];
+        $res = Client::get($url);
         return json_decode($res->body, true);
     }
 }
