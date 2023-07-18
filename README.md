@@ -69,9 +69,9 @@
     }
 
     //上传视频（视频小于5M直接上传文件，大于5M则分片上传）
-    public function uploadVideo(Request $request)
+    public function uploadVideo()
     {
-        $file = $request->file('file');
+        $file = '****';//视频url
         $uploadToken = '****';
         $endpoint = "****";
 

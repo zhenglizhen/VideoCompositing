@@ -91,9 +91,14 @@ class KuaiShou
         if (!isset($params['file']) || empty($params['file'])) {
             return 'file不能为空';
         }
-        $fileSize = $params['file']->getSize();
-
         $maxFileSize = 1048576 * 5;
+//        $fileSize=$params['file']->getSize();
+        $fileSize=$this->getVideoSize($params['file']);
+
+        $save_to = dirname(dirname(__DIR__)) . '/1.mp4';
+        $content = file_get_contents($params['file']);
+        file_put_contents($save_to, $content);
+        $params['file']=$save_to;
 
         if ($fileSize < $maxFileSize) {//文件小于5M直接上传文件
             $url = 'http://' . $params['endpoint'] . '/api/upload/multipart?upload_token=' . $params['uploadToken'];
@@ -116,7 +121,7 @@ class KuaiShou
             }
             fclose($file_handle);
             $params['chunk_number'] = $chunk_number;
-            $this->completeDistribute($params);
+            return $this->completeDistribute($params);
         }
     }
 
@@ -128,7 +133,7 @@ class KuaiShou
             'Content-Type' => 'video/mp4'
         ];
         $res = Client::post($url, $body, $header);
-//        return json_decode($res->body, true);
+        return json_decode($res->body, true);
     }
 
     public function completeDistribute($params)
@@ -203,4 +208,17 @@ class KuaiShou
         $res = Client::get($url);
         return json_decode($res->body, true);
     }
+
+    public function getVideoSize($videoUrl) {
+        $headers = get_headers($videoUrl, true);
+
+        if (strpos($headers[0], '200') === false) {
+            return false; // Request failed or video not found
+        }
+        $contentLength = isset($headers['Content-Length']) ? intval($headers['Content-Length']) : 0;
+        return $contentLength;
+    }
+
+
+
 }
