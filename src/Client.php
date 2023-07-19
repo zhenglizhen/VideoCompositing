@@ -93,12 +93,19 @@ class Client
     }
 
     /**
-     * 快手刷新token 有效期
+     * 刷新token 有效期
      * @return mixed|string
      */
-    public function refreshAccessToken()
+    public function refreshAccessToken($params)
     {
-        return (new KuaiShou())->refreshAccessToken($params);
+        switch ($this->appName) {
+            case 'kuaishou':
+                return (new KuaiShou())->refreshAccessToken($params);
+            case 'douyin':
+                return (new DouYin())->refreshAccessToken($params);
+            default:
+                return '正在开发中';
+        }
     }
 
     /**

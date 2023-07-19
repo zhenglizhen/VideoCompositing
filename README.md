@@ -163,3 +163,113 @@
         ];
         $res = $client->createContent($params);
     }
+
+###用法（抖音）
+    protected $clientKey; //抖音key
+    protected $clientSecret; //抖音secret
+    protected $appName; //应用 kuaishou/douyin
+    protected $redirectUri; //回调链接
+
+    public function __construct()
+    {
+        $this->appName = 'douyin';
+        $this->clientKey = '***';
+        $this->clientSecret = '****';
+        $this->redirectUri = '****';
+    }
+    
+    //获取code值
+    public function getCode()
+    {
+        $client = new Client($this->appName);
+        $params = [
+            'clientKey' => $this->clientKey,
+            'redirectUri' => $this->redirectUri
+        ];
+        $client->getCode($params)
+    }
+    
+    //获取accessToken和openid（access_token 过期时间15天，refresh_token过期时间30天）
+    public function getAccessToken()
+    {
+        $video = new Client($this->appName);
+        $params = [
+            'clientKey' => $this->clientKey,
+            'clientSecret' => $this->clientSecret,
+            'code' => '5b80487773db1dc7df4aog83v7J2T9pjN2H1'
+        ];
+        $res = $video->getAccessToken($params);
+    }
+
+    //刷新AccessToken
+    public function refreshAccessToken()
+    {
+        $video = new Client($this->appName);
+        $params = [
+            'client_key' => $this->clientKey,
+            'refresh_token' => 'rft.b7ea117a9656655c773786311312b2c4SyKcq5B4rYS3uZb2bprgR81utX8f'
+        ];
+        $video->refreshAccessToken($params);
+    }
+
+    //上传图文 获取image_id
+    public function uploadImage()
+    {
+        $file = '***';//图片链接
+        $video = new Client($this->appName);
+        $accessToken = '***';
+        $openId = '***';
+        $params = [
+            'accessToken' => $accessToken,
+            'openId' => $openId,
+            'image' => $file,
+        ];
+        $res = $video->uploadImage($params);*
+    }
+    
+    //发布图文
+    public function createImage()
+    {
+        $video = new Client($this->appName);
+        $accessToken = '***';
+        $openId = '***';
+        $text = '测试'; 标题
+        $image_list = ['***', '***']; // 多个image_id
+        $params = [
+            'accessToken' => $accessToken,
+            'openId' => $openId,
+            'text' => $text,
+            'image_list' => $image_list
+        ];
+        $res = $video->createImage($params);
+    }
+
+    //上传视频 获取video_id （视频小于10M直接上传。大于10M则分片上传）
+    public function uploadVideo()
+    {
+        $file = '****';//视频url
+        $video = new Client($this->appName);
+        $accessToken = '***';
+        $openId = '***';
+        $params = [
+            'accessToken' => $accessToken,
+            'openId' => $openId,
+            'video' => $file,
+        ];
+        $res = $video->uploadVideo($params);
+    }
+    public function createVideo()
+    {
+        $video = new Client($this->appName);
+        $accessToken = '***';
+        $openId = '***';
+        $text = '测试'; //标题
+        $video_id = '***';
+        $params = [
+            'accessToken' => $accessToken,
+            'openId' => $openId,
+            'text' => $text,
+            'video_id' => $video_id
+        ];
+        $res = $video->createVideo($params);
+    }
