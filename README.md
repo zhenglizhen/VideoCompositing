@@ -11,6 +11,7 @@
 
 ###安装
     composer require caitui/videocompositing
+
 ###用法（快手）
     use VideoCompositing\Client;
 
@@ -69,9 +70,10 @@
     }
 
     //上传视频（视频小于5M直接上传文件，大于5M则分片上传）
-    public function uploadVideo()
+    public function uploadVideo(\app\Request $request)
     {
-        $file = '****';//视频url
+        $file = $request->file('file');
+        $fileSize=$file->getSize();
         $uploadToken = '****';
         $endpoint = "****";
 
@@ -80,6 +82,7 @@
             'endpoint' => $endpoint,
             'uploadToken' => $uploadToken,
             'file' => $file,
+            'fileSize'=>$fileSize
         ];
         $video->uploadVideo($params);
     }
@@ -213,9 +216,16 @@
     }
 
     //上传图文 获取image_id
-    public function uploadImage()
+    public function uploadImage(\app\Request $request)
     {
-        $file = '***';//图片链接
+        $file = $request->file('file');
+        
+        //或者将url转存到本地
+        //$save_to = dirname(dirname(__DIR__)) . '/1.jpg';
+        //$content = file_get_contents('https://myy-one-stand.oss-cn-beijing.aliyuncs.com/company/2117/5019-1687141391.jpg');
+        //file_put_contents($save_to, $content);
+        //$file = $save_to;
+
         $video = new Client($this->appName);
         $accessToken = '***';
         $openId = '***';
@@ -245,18 +255,61 @@
     }
 
     //上传视频 获取video_id （视频小于10M直接上传。大于10M则分片上传）
-    public function uploadVideo()
+    public function uploadVideo(\app\Request $request)
     {
-        $file = '****';//视频url
+        $file = $request->file('file');
+        $fileSize = $file->getSize();
         $video = new Client($this->appName);
-        $accessToken = '***';
-        $openId = '***';
+
+        //视频链接处理
+        //$file = 'https://myy-one-stand.oss-cn-beijing.aliyuncs.com/list/2033/202307/1689735980720.mp4';
+        //$fileSize = $video->getVideoSize($file);
+        //$save_to = dirname(dirname(__DIR__)) . '/1.mp4';
+        //$content = file_get_contents($file);
+        //file_put_contents($save_to, $content);
+        //$file = $save_to;
+
+
+        $accessToken = 'act.3.h227zKK0gByaIXPZWnvynsNM5BfsqNrAbTwe9eGZxOZhl0JuWQB3VtU0qu2rTmKb6WmAeqLqbvqX8Jsy01yHquSm8g2YlTxH5lG-ontiOJ1tWbeqgOpx71GRFvTW5x8eX2U10EtCKqjB0pwn1m0C8dXnKAVevJWxtgo6cA==';
+        $openId = '_000_8_Z3n99pcaq6SzKKmmLmMjpJyf7RFf1';
         $params = [
-            'accessToken' => $accessToken,
-            'openId' => $openId,
-            'video' => $file,
+        'accessToken' => $accessToken,
+        'openId' => $openId,
+        'video' => $file,
         ];
-        $res = $video->uploadVideo($params);
+
+        
+        $maxFileSize = 1048576 * 10;
+
+        if ($fileSize < $maxFileSize) { //文件小于10M直接上传文件
+            $res = $video->uploadVideo($params);
+            var_dump($res);
+        }else{
+            $upload_id = $video->initDistribute($params);
+            $upload_id = urlencode($upload_id);
+
+            $file_handle = fopen($file, 'rb');
+            $part_number = 1;
+            $total = floor($fileSize / $maxFileSize);
+            if ($part_number == $total) {
+                $maxFileSize = 1048576 * 20;
+            }
+            while (!feof($file_handle)) {
+                // 读取指定大小的数据
+                $chunk_data = fread($file_handle, $maxFileSize);
+                $params['upload_id'] = $upload_id;
+                $params['part_number'] = $part_number;
+
+                $save_to = dirname(dirname(__DIR__)) . $params['part_number'] . '.mp4';
+                file_put_contents($save_to, $chunk_data);
+                $params['video'] = $save_to;
+                $video->distributeVideo($params);
+                // 增加分片编号
+                $part_number++;
+            }
+            fclose($file_handle);
+            var_dump($video->completeDistribute($params));
+        }
     }
     public function createVideo()
     {

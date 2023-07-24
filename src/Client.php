@@ -159,6 +159,31 @@ class Client
     }
 
     /**
+     * 上传视频
+     * @param $params
+     * @return mixed|string
+     */
+    public function initDistribute($params)
+    {
+        return (new DouYin())->initDistribute($params);
+    }
+
+    public function distributeVideo($params)
+    {
+        return (new DouYin())->distributeVideo($params);
+    }
+
+    public function completeDistribute($params)
+    {
+        return (new DouYin())->completeDistribute($params);
+    }
+
+    public function getVideoSize($url)
+    {
+        return (new DouYin())->getVideoSize($url);
+    }
+
+    /**
      * 抖音创建视频
      * @return mixed|string
      */
@@ -166,6 +191,7 @@ class Client
     {
         return (new DouYin())->createVideo($params);
     }
+
 
     /**
      * 微信公众号创建内容
@@ -187,14 +213,14 @@ class Client
         }
 
         //上传封面图
-        $res=(new WeChat())->uploadMedia($params);
-        $params['thumb_media_id']=$res['media_id'];//封面图的media_id
+        $res = (new WeChat())->uploadMedia($params);
+        $params['thumb_media_id'] = $res['media_id'];//封面图的media_id
 
         //创建草稿
-        $res=(new WeChat())->createDraft($params);
-        $params['media_id']=$res['media_id'];//草稿的media_id
+        $res = (new WeChat())->createDraft($params);
+        $params['media_id'] = $res['media_id'];//草稿的media_id
 
-        $res=(new WeChat())->publish($params);
+        $res = (new WeChat())->publish($params);
         return $res;
     }
 }

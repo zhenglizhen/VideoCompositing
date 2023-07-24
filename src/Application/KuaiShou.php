@@ -91,16 +91,12 @@ class KuaiShou
         if (!isset($params['file']) || empty($params['file'])) {
             return 'file不能为空';
         }
+        if (!isset($params['fileSize']) || empty($params['fileSize'])) {
+            return 'fileSize不能为空';
+        }
         $maxFileSize = 1048576 * 5;
-//        $fileSize=$params['file']->getSize();
-        $fileSize=$this->getVideoSize($params['file']);
 
-        $save_to = dirname(dirname(__DIR__)) . '/1.mp4';
-        $content = file_get_contents($params['file']);
-        file_put_contents($save_to, $content);
-        $params['file']=$save_to;
-
-        if ($fileSize < $maxFileSize) {//文件小于5M直接上传文件
+        if ($params['fileSize'] < $maxFileSize) {//文件小于5M直接上传文件
             $url = 'http://' . $params['endpoint'] . '/api/upload/multipart?upload_token=' . $params['uploadToken'];
             $body = [
                 'file' => $params['file']

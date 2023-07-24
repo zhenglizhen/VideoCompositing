@@ -20,7 +20,7 @@ class DouYin
         if (!isset($params['redirectUri']) || empty($params['redirectUri'])) {
             return 'redirectUri不能为空';
         }
-        $url = Config::DouYin_HOST . '/platform/oauth/connect?client_key=' . $params['clientKey'] . '&response_type=code&scope=user_info,video.create.bind&redirect_uri=' . $params['redirectUri'] . '&state=STATE';
+        $url = Config::DouYin_HOST . '/platform/oauth/connect/?client_key=' . $params['clientKey'] . '&response_type=code&scope=user_info,video.create.bind&redirect_uri=' . $params['redirectUri'] . '&state=STATE';
         header("Location: $url");
         exit();
     }
@@ -41,7 +41,7 @@ class DouYin
         if (!isset($params['code']) || empty($params['code'])) {
             return 'code不能为空';
         }
-        $url = Config::DouYin_HOST . '/oauth/access_token';
+        $url = Config::DouYin_HOST . '/oauth/access_token/';
         $body = [
             'client_secret' => $params['clientSecret'],
             'code' => $params['code'],
@@ -87,13 +87,8 @@ class DouYin
             return 'image不能为空';
         }
         $url = Config::DouYin_HOST . '/api/douyin/v1/video/upload_image/?open_id=' . $params['openId'];
-
-        $save_to = dirname(dirname(__DIR__)) . '/1.jpg';
-        $content = file_get_contents($params['image']);
-        file_put_contents($save_to, $content);
-
         $body = [
-            'image' => new \CURLFile($save_to)
+            'image' => new \CURLFile($params['image'])
         ];
         $header = [
             'access-token' => $params['accessToken']
@@ -130,7 +125,7 @@ class DouYin
     }
 
     /**
-     * 上传视频
+     * 直接上传视频
      * @param $params
      * @return mixed|string
      */
@@ -145,16 +140,16 @@ class DouYin
         if (!isset($params['video']) || empty($params['video'])) {
             return 'video不能为空';
         }
-        $fileSize = $this->getVideoSize($params['video']);
-
-        $save_to = dirname(dirname(__DIR__)) . '/1.mp4';
-        $content = file_get_contents($params['video']);
-        file_put_contents($save_to, $content);
-        $params['video'] = $save_to;
+//        $fileSize = $this->getVideoSize($params['video']);
+//
+//        $save_to = dirname(dirname(__DIR__)) . '/1.mp4';
+//        $content = file_get_contents($params['video']);
+//        file_put_contents($save_to, $content);
+//        $params['video'] = $save_to;
 
         $maxFileSize = 1048576 * 10;
 
-        if ($fileSize < $maxFileSize) {//文件小于10M直接上传文件
+        if ($params['fileSize'] < $maxFileSize) {//文件小于10M直接上传文件
 
             $url = Config::DouYin_HOST . '/api/douyin/v1/video/upload_video/?open_id=' . $params['openId'];
             $body = [
@@ -168,12 +163,13 @@ class DouYin
             unlink($save_to);
             return json_decode($res->body, true);
         } else {//分片上传
+            return "请使用分片上传";
             $upload_id = $this->initDistribute($params);
             $upload_id = urlencode($upload_id);
 
             $file_handle = fopen($params['video'], 'rb');
             $part_number = 1;
-            $total = floor($fileSize / $maxFileSize);
+            $total = floor($params['fileSize'] / $maxFileSize);
             if ($part_number == $total) {
                 $maxFileSize = 1048576 * 20;
             }
@@ -199,6 +195,12 @@ class DouYin
      */
     public function initDistribute($params)
     {
+        if (!isset($params['accessToken']) || empty($params['accessToken'])) {
+            return 'accessToken不能为空';
+        }
+        if (!isset($params['openId']) || empty($params['openId'])) {
+            return 'openId不能为空';
+        }
         $url = Config::DouYin_HOST . '/api/douyin/v1/video/init_video_part_upload/?open_id=' . $params['openId'];
         $header = [
             'access-token' => $params['accessToken']
@@ -214,19 +216,34 @@ class DouYin
      */
     public function distributeVideo($params)
     {
-        $save_to = dirname(dirname(__DIR__)) . '/a' . $params['part_number'] . '.mp4';
-        file_put_contents($save_to, $params['video']);
+        if (!isset($params['accessToken']) || empty($params['accessToken'])) {
+            return 'accessToken不能为空';
+        }
+        if (!isset($params['video']) || empty($params['video'])) {
+            return 'video不能为空';
+        }
+        if (!isset($params['part_number']) || empty($params['part_number'])) {
+            return 'part_number不能为空';
+        }
+        if (!isset($params['upload_id']) || empty($params['upload_id'])) {
+            return 'upload_id不能为空';
+        }
+        if (!isset($params['openId']) || empty($params['openId'])) {
+            return 'openId不能为空';
+        }
+
+//        $save_to = dirname(dirname(__DIR__)) . '/a' . $params['part_number'] . '.mp4';
+//        file_put_contents($save_to, $params['video']);
 
         $url = Config::DouYin_HOST . '/api/douyin/v1/video/upload_video_part/?open_id=' . $params['openId'] . '&upload_id=' . $params['upload_id'] . '&part_number=' . $params['part_number'];
         $body = [
-            'video' => new \CURLFile($save_to)
+            'video' => new \CURLFile($params['video'])
         ];
         $header = [
             'content-type' => 'multipart/form-data',
             'access-token' => $params['accessToken']
         ];
-        Client::post($url, $body, $header);
-        unlink($save_to);
+        $res = Client::post($url, $body, $header);
     }
 
     /**
@@ -236,6 +253,15 @@ class DouYin
      */
     public function completeDistribute($params)
     {
+        if (!isset($params['accessToken']) || empty($params['accessToken'])) {
+            return 'accessToken不能为空';
+        }
+        if (!isset($params['openId']) || empty($params['openId'])) {
+            return 'video不能为空';
+        }
+        if (!isset($params['upload_id']) || empty($params['upload_id'])) {
+            return 'part_number不能为空';
+        }
         $url = Config::DouYin_HOST . '/api/douyin/v1/video/complete_video_part_upload/?open_id=' . $params['openId'] . '&upload_id=' . $params['upload_id'];
         $body = [];
         $header = [
