@@ -46,6 +46,19 @@
         ];
         $res = $video->getAccessToken($params);
     }
+    
+    //获取用户信息
+    public function getUserInfo()
+    {
+        $video = new Client('kuaishou');
+        $params = [
+            'appId' => $this->appId,
+            'accessToken' => '****'
+        ];
+        $res = $video->getUserInfo($params);
+        var_dump($res);
+    }
+
     //刷新AccessToken
     public function refreshAccessToken()
     {
@@ -202,6 +215,20 @@
             'code' => '5b80487773db1dc7df4aog83v7J2T9pjN2H1'
         ];
         $res = $video->getAccessToken($params);
+    }
+
+    //获取用户信息
+    public function getUserInfo()
+    {
+        $accessToken = '****';
+        $openId = '****';
+        $video = new Client($this->appName);
+        $params = [
+            'accessToken' => $accessToken,
+            'openId' => $openId,
+        ];
+        $res = $video->getUserInfo($params);
+        var_dump($res);
     }
 
     //刷新AccessToken

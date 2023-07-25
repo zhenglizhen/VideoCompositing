@@ -20,7 +20,7 @@ class DouYin
         if (!isset($params['redirectUri']) || empty($params['redirectUri'])) {
             return 'redirectUri不能为空';
         }
-        $url = Config::DouYin_HOST . '/platform/oauth/connect/?client_key=' . $params['clientKey'] . '&response_type=code&scope=user_info,video.create.bind&redirect_uri=' . $params['redirectUri'] . '&state=STATE';
+        $url = Config::DouYin_HOST . '/platform/oauth/connect/?client_key=' . $params['clientKey'] . '&response_type=code&scope=user_info,video.create.bind,video.list.bind&redirect_uri=' . $params['redirectUri'] . '&state=STATE';
         header("Location: $url");
         exit();
     }
@@ -49,6 +49,23 @@ class DouYin
             'client_key' => $params['clientKey'],
         ];
         $res = Client::POST($url, $body);
+        return json_decode($res->body, true);
+    }
+
+    public function getUserInfo($params)
+    {
+        if (!isset($params['openId']) || empty($params['openId'])) {
+            return 'openId不能为空';
+        }
+        if (!isset($params['accessToken']) || empty($params['accessToken'])) {
+            return 'accessToken不能为空';
+        }
+        $url = Config::DouYin_HOST . '/oauth/userinfo/';
+        $body=[
+            'access_token'=>$params['accessToken'],
+            'open_id'=>$params['openId'],
+        ];
+        $res = Client::POST($url,$body);
         return json_decode($res->body, true);
     }
 
@@ -303,10 +320,36 @@ class DouYin
         if (!isset($params['openId']) || empty($params['openId'])) {
             return 'openId不能为空';
         }
+        if (!isset($params['accessToken']) || empty($params['accessToken'])) {
+            return 'accessToken不能为空';
+        }
         $url = Config::DouYin_HOST . '/api/douyin/v1/video/video_list/?open_id=' . $params['openId'];
-        $res = Client::get($url);
+        $header = [
+            'access-token' => $params['accessToken']
+        ];
+        $res = Client::get($url, $header);
         return json_decode($res->body, true);
     }
+
+    public function getVideoData($params)
+    {
+        if (!isset($params['item_ids']) || empty($params['item_ids'])) {
+            return 'item_ids不能为空';
+        }
+        if (!isset($params['accessToken']) || empty($params['accessToken'])) {
+            return 'accessToken不能为空';
+        }
+        $url = Config::DouYin_HOST . '/api/douyin/v1/video/video_data/?open_id=' . $params['openId'];
+        $header = [
+            'access-token' => $params['accessToken']
+        ];
+        $body = [
+            'item_ids' => $params['item_ids']
+        ];
+        $res = Client::POST($url, $body, $header);
+        return json_decode($res->body, true);
+    }
+
 
     public function getVideoSize($videoUrl)
     {
@@ -317,5 +360,42 @@ class DouYin
         }
         $contentLength = isset($headers['Content-Length']) ? intval($headers['Content-Length']) : 0;
         return $contentLength;
+    }
+
+    public function getBaseData()
+    {
+        if (!isset($params['openId']) || empty($params['openId'])) {
+            return 'openId不能为空';
+        }
+        if (!isset($params['item_id']) || empty($params['item_id'])) {
+            return 'item_id不能为空';
+        }
+        $url = '/data/external/item/base/';
+        switch ($params['url']) {
+            case 'base':
+                $url = '/data/external/item/base/';
+                break;
+            case 'like':
+                $url = '/data/external/item/like/';
+                break;
+            case 'comment':
+                $url = '/data/external/item/comment/';
+                break;
+            case 'play':
+                $url = '/data/external/item/play/';
+                break;
+            case 'share':
+                $url = '/data/external/item/share/';
+                break;
+        }
+        $url = Config::DouYin_HOST . $url . '?open_id=' . $params['openId'] . '&item_id=' . $params['item_id'];
+        if(isset($params['date_type'])){
+            $url .='&date_type='.$params['date_type'];
+        }
+        $header = [
+            'access-token' => $params['accessToken']
+        ];
+        $res = Client::get($url, $header);
+        return json_decode($res->body, true);
     }
 }

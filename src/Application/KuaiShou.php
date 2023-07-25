@@ -51,7 +51,20 @@ class KuaiShou
         return json_decode($res->body, true);
     }
 
-    public function refreshAccessToken()
+    public function getUserInfo($params)
+    {
+        if (!isset($params['appId']) || empty($params['appId'])) {
+            return 'appId不能为空';
+        }
+        if (!isset($params['accessToken']) || empty($params['accessToken'])) {
+            return 'accessToken不能为空';
+        }
+        $url = Config::KuaiShow_HOST . '/openapi/user_info?app_id=' . $params['appId'] . '&access_token=' . $params['accessToken'];
+        $res = Client::get($url);
+        return json_decode($res->body, true);
+    }
+
+    public function refreshAccessToken($params)
     {
         if (!isset($params['appId']) || empty($params['appId'])) {
             return 'appId不能为空';
@@ -205,7 +218,8 @@ class KuaiShou
         return json_decode($res->body, true);
     }
 
-    public function getVideoSize($videoUrl) {
+    public function getVideoSize($videoUrl)
+    {
         $headers = get_headers($videoUrl, true);
 
         if (strpos($headers[0], '200') === false) {
@@ -214,7 +228,6 @@ class KuaiShou
         $contentLength = isset($headers['Content-Length']) ? intval($headers['Content-Length']) : 0;
         return $contentLength;
     }
-
 
 
 }

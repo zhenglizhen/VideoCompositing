@@ -57,6 +57,26 @@ class Client
     }
 
     /**
+     * 根据token获取用户信息
+     * @param $params
+     * @return mixed|string
+     */
+    public function getUserInfo($params)
+    {
+        switch ($this->appName) {
+            case 'kuaishou':
+                return (new KuaiShou())->getUserInfo($params);
+                break;
+            case 'douyin':
+                return (new DouYin())->getUserInfo($params);
+            default:
+                return '正在开发中';
+        }
+
+    }
+
+
+    /**
      * 上传视频
      * @param $params
      * @return mixed|string
