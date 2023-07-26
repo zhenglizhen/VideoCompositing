@@ -353,3 +353,48 @@
         ];
         $res = $video->createVideo($params);
     }
+
+    //获取用户发布的视频列表
+    public function getVideo()
+    {
+        $video = new Client($this->appName);
+        $accessToken = '****';
+        $openId = '****';
+        $params = [
+            'accessToken' => $accessToken,
+            'openId' => $openId,
+        ];
+        $res = $video->getVideo($params);
+    }
+    //获取多个视频的视频详情，评论数、点赞数、下载数、分享数等数据
+    public function getVideoDetail()
+    {
+        $video = new Client($this->appName);
+        $accessToken = '****';
+        $item_ids = ['****', '****']; //元素为item_id值
+        $openId = '****';
+        $params = [
+            'accessToken' => $accessToken,
+            'item_ids' => $item_ids,
+            'openId' => $openId,
+        ];
+        $res = $video->getVideoDetail($params);
+        var_dump($res);
+    }
+
+    //获取近*天的数据
+    public function getBaseData()
+    {
+        $video = new Client($this->appName);
+        $accessToken = '****';
+        $item_id = '****';
+        $openId = '****';
+        $params = [
+            'accessToken' => $accessToken,
+            'item_id' => $item_id,
+            'openId' => $openId,
+            'url'=>'base',//base:近三十天的数据（与date_type无关）；like：近date_type天的点赞数据；comment：近date_type天的评论数据；play：近date_type天的播放数据；share：近date_type天的分享数据；
+            'date_type'=>7,//7/15
+        ];
+        $res = $video->getBaseData($params);
+    }

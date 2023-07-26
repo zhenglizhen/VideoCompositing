@@ -212,6 +212,18 @@ class Client
         return (new DouYin())->createVideo($params);
     }
 
+    /**
+     * 查看视频详情
+     */
+    public function getVideoDetail($params)
+    {
+        return (new DouYin())->getVideoData($params);
+    }
+
+    public function getBaseData($params)
+    {
+        return (new DouYin())->getBaseData($params);
+    }
 
     /**
      * 微信公众号创建内容

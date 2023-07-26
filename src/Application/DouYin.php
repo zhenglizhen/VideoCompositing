@@ -20,7 +20,7 @@ class DouYin
         if (!isset($params['redirectUri']) || empty($params['redirectUri'])) {
             return 'redirectUri不能为空';
         }
-        $url = Config::DouYin_HOST . '/platform/oauth/connect/?client_key=' . $params['clientKey'] . '&response_type=code&scope=user_info,video.create.bind,video.list.bind&redirect_uri=' . $params['redirectUri'] . '&state=STATE';
+        $url = Config::DouYin_HOST . '/platform/oauth/connect/?client_key=' . $params['clientKey'] . '&response_type=code&scope=user_info,video.create.bind,video.data.bind,video.list.bind,data.external.item&redirect_uri=' . $params['redirectUri'] . '&state=STATE';
         header("Location: $url");
         exit();
     }
@@ -323,7 +323,7 @@ class DouYin
         if (!isset($params['accessToken']) || empty($params['accessToken'])) {
             return 'accessToken不能为空';
         }
-        $url = Config::DouYin_HOST . '/api/douyin/v1/video/video_list/?open_id=' . $params['openId'];
+        $url = Config::DouYin_HOST . '/api/douyin/v1/video/video_list/?open_id=' . $params['openId'] .'&count=10';
         $header = [
             'access-token' => $params['accessToken']
         ];
@@ -333,12 +333,16 @@ class DouYin
 
     public function getVideoData($params)
     {
-        if (!isset($params['item_ids']) || empty($params['item_ids'])) {
-            return 'item_ids不能为空';
-        }
         if (!isset($params['accessToken']) || empty($params['accessToken'])) {
             return 'accessToken不能为空';
         }
+        if (!isset($params['openId']) || empty($params['openId'])) {
+            return 'openId不能为空';
+        }
+        if (!isset($params['item_ids']) || empty($params['item_ids'])) {
+            return 'item_ids不能为空';
+        }
+
         $url = Config::DouYin_HOST . '/api/douyin/v1/video/video_data/?open_id=' . $params['openId'];
         $header = [
             'access-token' => $params['accessToken']
@@ -346,7 +350,8 @@ class DouYin
         $body = [
             'item_ids' => $params['item_ids']
         ];
-        $res = Client::POST($url, $body, $header);
+
+        $res = Client::POST($url, json_encode($body, JSON_UNESCAPED_UNICODE), $header);
         return json_decode($res->body, true);
     }
 
@@ -362,7 +367,7 @@ class DouYin
         return $contentLength;
     }
 
-    public function getBaseData()
+    public function getBaseData($params)
     {
         if (!isset($params['openId']) || empty($params['openId'])) {
             return 'openId不能为空';
@@ -388,6 +393,7 @@ class DouYin
                 $url = '/data/external/item/share/';
                 break;
         }
+        $params['item_id'] = urlencode($params['item_id']);
         $url = Config::DouYin_HOST . $url . '?open_id=' . $params['openId'] . '&item_id=' . $params['item_id'];
         if(isset($params['date_type'])){
             $url .='&date_type='.$params['date_type'];
