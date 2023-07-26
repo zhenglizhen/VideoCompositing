@@ -366,7 +366,82 @@ class DouYin
         $contentLength = isset($headers['Content-Length']) ? intval($headers['Content-Length']) : 0;
         return $contentLength;
     }
+    //用户数据
+    public function getUserBaseData($params)
+    {
+        if (!isset($params['openId']) || empty($params['openId'])) {
+            return 'openId不能为空';
+        }
 
+        $url = '/data/external/user/item/';
+        switch ($params['url']) {
+            case 'item':
+                $url = '/data/external/user/item/';
+                break;
+            case 'fans':
+                $url = '/data/external/user/fans/';
+                break;
+            case 'like':
+                $url = '/data/external/user/like/';
+                break;
+            case 'comment':
+                $url = '/data/external/user/comment/';
+                break;
+            case 'share':
+                $url = '/data/external/user/share/';
+                break;
+            case 'profile':
+                $url = '/data/external/user/profile/';
+                break;
+        }
+        $url = Config::DouYin_HOST . $url . '?open_id=' . $params['openId'];
+        if(isset($params['date_type'])){
+            $url .='&date_type='.$params['date_type'];
+        }else{
+            $url .='&date_type=7';
+        }
+        $header = [
+            'access-token' => $params['accessToken']
+        ];
+        $res = json_decode(Client::get($url, $header)->body, true);
+        if(!$res['data']['error_code']){
+            return $res['data'];
+        }else{
+            return $res['data']['result_list'];
+        }
+    }
+
+    //粉丝数据
+    public function getFansBaseData($params)
+    {
+        if (!isset($params['openId']) || empty($params['openId'])) {
+            return 'openId不能为空';
+        }
+
+        $url = '/api/douyin/v1/user/fans_data/';
+        switch ($params['url']) {
+            case 'data':
+                $url = '/api/douyin/v1/user/fans_data/';
+                break;
+            case 'source':
+                $url = '/data/extern/fans/source/';
+                break;
+            case 'favourite':
+                $url = '/data/extern/fans/favourite/';
+                break;
+            case 'comment':
+                $url = '/data/extern/fans/comment/';
+                break;
+        }
+        $url = Config::DouYin_HOST . $url . '?open_id=' . $params['openId'];
+        $header = [
+            'access-token' => $params['accessToken']
+        ];
+        $res = Client::get($url, $header);
+        return json_decode($res->body, true);
+    }
+
+    //视频数据
     public function getBaseData($params)
     {
         if (!isset($params['openId']) || empty($params['openId'])) {

@@ -226,6 +226,97 @@ class Client
     }
 
     /**
+     * 抖音获取视频数据
+     * @param $params
+     * @return mixed
+     */
+    public function getVideoData($params)
+    {
+        $list = (new DouYin())->getVideo($params);
+
+        if ($list['data']['error_code']) {
+            return $list['data'];
+        }
+        $item_ids = [];
+        foreach ($list['data']['list'] as $k => &$v) {
+            $params['item_id'] = $v['item_id'];
+
+            $params['url'] = 'like';
+            $res = (new DouYin())->getBaseData($params)['data'];
+            if (!$res['error_code']) {
+                $v['like_data'] = (new DouYin())->getBaseData($params)['data']['result_list'];
+            } else {
+                $v['like_data'] = [];
+            }
+
+            $params['url'] = 'comment';
+            $res = (new DouYin())->getBaseData($params)['data'];
+            if (!$res['error_code']) {
+                $v['comment_data'] = (new DouYin())->getBaseData($params)['data']['result_list'];
+            } else {
+                $v['comment_data'] = [];
+            }
+
+            $params['url'] = 'play';
+            $res = (new DouYin())->getBaseData($params)['data'];
+            if (!$res['error_code']) {
+                $v['play_data'] = (new DouYin())->getBaseData($params)['data']['result_list'];
+            } else {
+                $v['play_data'] = [];
+            }
+
+            $params['url'] = 'share';
+            $res = (new DouYin())->getBaseData($params)['data'];
+            if (!$res['error_code']) {
+                $v['share_data'] = (new DouYin())->getBaseData($params)['data']['result_list'];
+            } else {
+                $v['share_data'] = [];
+            }
+        }
+        return $list['data']['list'];
+    }
+
+    /**
+     * 抖音获取用户数据、粉丝画像
+     */
+    public function getUserData($params)
+    {
+        $data=[];
+        $params['url']='item';
+        $data['item']=(new DouYin())->getUserBaseData($params);
+
+        $params['url']='fans';
+        $data['fans']=(new DouYin())->getUserBaseData($params);
+
+        $params['url']='like';
+        $data['like']=(new DouYin())->getUserBaseData($params);
+
+        $params['url']='comment';
+        $data['comment']=(new DouYin())->getUserBaseData($params);
+
+        $params['url']='share';
+        $data['share']=(new DouYin())->getUserBaseData($params);
+
+        $params['url']='profile';
+        $data['profile']=(new DouYin())->getUserBaseData($params);
+
+
+        $params['url']='data';
+        $data['fans_data']=(new DouYin())->getFansBaseData($params);
+
+        $params['url']='source';
+        $data['fans_source']=(new DouYin())->getFansBaseData($params);
+
+        $params['url']='favourite';
+        $data['fans_favourite']=(new DouYin())->getFansBaseData($params);
+
+        $params['url']='comment';
+        $data['fans_comment']=(new DouYin())->getFansBaseData($params);
+
+        return $data;
+    }
+
+    /**
      * 微信公众号创建内容
      * @param $params
      */

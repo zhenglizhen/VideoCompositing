@@ -354,6 +354,36 @@
         $res = $video->createVideo($params);
     }
 
+    //获取用户视频详细信息（视频列表，视频点赞、浏览、评论等数据）
+    public function getVideoData()
+    {
+        $video = new Client($this->appName);
+        $accessToken = '****';
+        $openId = '****';
+        $params = [
+            'accessToken' => $accessToken,
+            'openId' => $openId,
+            'date_type'=>7 //7/15 点赞、浏览、评论等列表数据只能查询出近7/15天内
+        ];
+        $res = $video->getVideoData($params);
+        var_dump($res);
+    }
+
+    //获取用户的视频、粉丝、点赞等数据和粉丝来源数据
+    public function getUserData()
+    {
+        $video = new Client($this->appName);
+        $accessToken = 'act.3.Z77LjtPZVwaiZnG6yQPocEtvtDDstWa-Rg-DR1IWWWC4HKdIVIfLv-JJfrxNpwd93P_7V_Y9CnvMs1U5Ye2rhwKfS_chaTzEYTaXOj2q7MYoFrDQxwrPrxdM_OaoMGWEdwu7o8huNDJ_Vqwu5CpzEUUFSI4kxktmJ3B-5w==';
+        $openId = '_000_8_Z3n99pcaq6SzKKmmLmMjpJyf7RFf1';
+        $params = [
+            'accessToken' => $accessToken,
+            'openId' => $openId,
+            'date_type'=>7 //7/15
+        ];
+        $res = $video->getUserData($params);
+        var_dump($res);
+    }
+
     //获取用户发布的视频列表
     public function getVideo()
     {
@@ -366,6 +396,8 @@
         ];
         $res = $video->getVideo($params);
     }
+    
+
     //获取多个视频的视频详情，评论数、点赞数、下载数、分享数等数据
     public function getVideoDetail()
     {
