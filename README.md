@@ -309,6 +309,7 @@
         $maxFileSize = 1048576 * 10;
 
         if ($fileSize < $maxFileSize) { //文件小于10M直接上传文件
+            $params['fileSize'] = $fileSize;
             $res = $video->uploadVideo($params);
             var_dump($res);
         }else{
@@ -327,7 +328,7 @@
                 $params['upload_id'] = $upload_id;
                 $params['part_number'] = $part_number;
 
-                $save_to = dirname(dirname(__DIR__)) . $params['part_number'] . '.mp4';
+                $save_to = '/a' . $params['part_number'] . '.mp4';
                 file_put_contents($save_to, $chunk_data);
                 $params['video'] = $save_to;
                 $video->distributeVideo($params);
@@ -338,6 +339,8 @@
             var_dump($video->completeDistribute($params));
         }
     }
+
+    //发布视频
     public function createVideo()
     {
         $video = new Client($this->appName);
@@ -373,8 +376,8 @@
     public function getUserData()
     {
         $video = new Client($this->appName);
-        $accessToken = 'act.3.Z77LjtPZVwaiZnG6yQPocEtvtDDstWa-Rg-DR1IWWWC4HKdIVIfLv-JJfrxNpwd93P_7V_Y9CnvMs1U5Ye2rhwKfS_chaTzEYTaXOj2q7MYoFrDQxwrPrxdM_OaoMGWEdwu7o8huNDJ_Vqwu5CpzEUUFSI4kxktmJ3B-5w==';
-        $openId = '_000_8_Z3n99pcaq6SzKKmmLmMjpJyf7RFf1';
+        $accessToken = '****';
+        $openId = '****';
         $params = [
             'accessToken' => $accessToken,
             'openId' => $openId,
