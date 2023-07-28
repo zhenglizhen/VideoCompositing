@@ -157,15 +157,10 @@ class DouYin
         if (!isset($params['video']) || empty($params['video'])) {
             return 'video不能为空';
         }
-//        $fileSize = $this->getVideoSize($params['video']);
-//
-//        $save_to = dirname(dirname(__DIR__)) . '/1.mp4';
-//        $content = file_get_contents($params['video']);
-//        file_put_contents($save_to, $content);
-//        $params['video'] = $save_to;
-
+        if (!isset($params['fileSize']) || empty($params['fileSize'])) {
+            return 'fileSize不能为空';
+        }
         $maxFileSize = 1048576 * 10;
-
         if ($params['fileSize'] < $maxFileSize) {//文件小于10M直接上传文件
 
             $url = Config::DouYin_HOST . '/api/douyin/v1/video/upload_video/?open_id=' . $params['openId'];
@@ -177,32 +172,9 @@ class DouYin
                 'access-token' => $params['accessToken']
             ];
             $res = Client::post($url, $body, $header);
-            unlink($save_to);
             return json_decode($res->body, true);
         } else {//分片上传
             return "请使用分片上传";
-            $upload_id = $this->initDistribute($params);
-            $upload_id = urlencode($upload_id);
-
-            $file_handle = fopen($params['video'], 'rb');
-            $part_number = 1;
-            $total = floor($params['fileSize'] / $maxFileSize);
-            if ($part_number == $total) {
-                $maxFileSize = 1048576 * 20;
-            }
-            while (!feof($file_handle)) {
-                // 读取指定大小的数据
-                $chunk_data = fread($file_handle, $maxFileSize);
-                $params['upload_id'] = $upload_id;
-                $params['part_number'] = $part_number;
-                $params['video'] = $chunk_data;
-                $this->distributeVideo($params);
-                // 增加分片编号
-                $part_number++;
-            }
-            fclose($file_handle);
-            unlink($save_to);
-            return $this->completeDistribute($params);
         }
     }
 
@@ -249,8 +221,6 @@ class DouYin
             return 'openId不能为空';
         }
 
-//        $save_to = dirname(dirname(__DIR__)) . '/a' . $params['part_number'] . '.mp4';
-//        file_put_contents($save_to, $params['video']);
 
         $url = Config::DouYin_HOST . '/api/douyin/v1/video/upload_video_part/?open_id=' . $params['openId'] . '&upload_id=' . $params['upload_id'] . '&part_number=' . $params['part_number'];
         $body = [
