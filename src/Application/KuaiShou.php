@@ -112,7 +112,7 @@ class KuaiShou
         if ($params['fileSize'] < $maxFileSize) {//文件小于5M直接上传文件
             $url = 'http://' . $params['endpoint'] . '/api/upload/multipart?upload_token=' . $params['uploadToken'];
             $body = [
-                'file' => $params['file']
+                'file' => new \CURLFile($params['file'])
             ];
             $res = Client::post($url, $body);
             return json_decode($res->body, true);
