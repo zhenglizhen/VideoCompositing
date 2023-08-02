@@ -57,6 +57,38 @@ class Client
     }
 
     /**
+     * 根据token获取用户信息
+     * @param $params
+     * @return mixed|string
+     */
+    public function getUserInfo($params)
+    {
+        switch ($this->appName) {
+            case 'kuaishou':
+                return (new KuaiShou())->getUserInfo($params);
+                break;
+            case 'douyin':
+                $data = [];
+
+                //用户粉丝数
+                $params['url'] = 'fans';
+                $res = (new DouYin())->getUserBaseData($params);
+                $res = array_reverse($res);
+                $data['fans'] = $res[0]['total_fans'];
+
+                $res = (new DouYin())->getUserInfo($params);
+                $data['avatar'] = $res['data']['avatar'];
+                $data['nickname'] = $res['data']['nickname'];
+                $data['open_id'] = $res['data']['open_id'];
+                return $data;
+            default:
+                return '正在开发中';
+        }
+
+    }
+
+
+    /**
      * 上传视频
      * @param $params
      * @return mixed|string
@@ -93,12 +125,19 @@ class Client
     }
 
     /**
-     * 快手刷新token 有效期
+     * 刷新token 有效期
      * @return mixed|string
      */
-    public function refreshAccessToken()
+    public function refreshAccessToken($params)
     {
-        return (new KuaiShou())->refreshAccessToken($params);
+        switch ($this->appName) {
+            case 'kuaishou':
+                return (new KuaiShou())->refreshAccessToken($params);
+            case 'douyin':
+                return (new DouYin())->refreshAccessToken($params);
+            default:
+                return '正在开发中';
+        }
     }
 
     /**
@@ -131,6 +170,24 @@ class Client
         return (new KuaiShou())->releaseVideo($params);
     }
 
+    public function getVideoData2($params)
+    {
+        $res=(new KuaiShou())->getVideo($params);
+        if($res['result']!=1){
+            return $res;
+        }
+        $data['count']=count($res['video_list']);
+        $data['like_count']=0;
+        $data['comment_count']=0;
+        $data['view_count']=0;
+        foreach ($res['video_list'] as $v){
+            $data['like_count']=$data['like_count']+$v['like_count'];
+            $data['comment_count']=$data['comment_count']+$v['comment_count'];
+            $data['view_count']=$data['view_count']+$v['view_count'];
+        }
+        return $data;
+    }
+
     /**
      * 抖音创建图文
      * @param $params
@@ -152,12 +209,156 @@ class Client
     }
 
     /**
+     * 上传视频
+     * @param $params
+     * @return mixed|string
+     */
+    public function initDistribute($params)
+    {
+        return (new DouYin())->initDistribute($params);
+    }
+
+    public function distributeVideo($params)
+    {
+        return (new DouYin())->distributeVideo($params);
+    }
+
+    public function completeDistribute($params)
+    {
+        return (new DouYin())->completeDistribute($params);
+    }
+
+    public function getVideoSize($url)
+    {
+        return (new DouYin())->getVideoSize($url);
+    }
+
+    /**
      * 抖音创建视频
      * @return mixed|string
      */
     public function createVideo($params)
     {
         return (new DouYin())->createVideo($params);
+    }
+
+    /**
+     * 查看视频详情
+     */
+    public function getVideoDetail($params)
+    {
+        return (new DouYin())->getVideoData($params);
+    }
+
+    public function getBaseData($params)
+    {
+        $data = [];
+        $params['url'] = 'like';
+        $res = (new DouYin())->getBaseData($params)['data'];
+        if ($res['error_code']) {
+            return $res['description'];
+        }
+        $data['like'] = $res['result_list'];
+
+        $params['url'] = 'comment';
+        $res = (new DouYin())->getBaseData($params)['data'];
+        if ($res['error_code']) {
+            return $res['description'];
+        }
+        $data['comment'] = $res['result_list'];
+
+        $params['url'] = 'play';
+        $res = (new DouYin())->getBaseData($params)['data'];
+        if ($res['error_code']) {
+            return $res['description'];
+        }
+        $data['play'] = $res['result_list'];
+
+        $params['url'] = 'share';
+        $res = (new DouYin())->getBaseData($params)['data'];
+        if ($res['error_code']) {
+            return $res['description'];
+        }
+        $data['share'] = $res['result_list'];
+        return $data;
+    }
+
+    /**
+     * 抖音获取视频数据
+     * @param $params
+     * @return mixed
+     */
+    public function getVideoData($params)
+    {
+        $list = (new DouYin())->getVideo($params);
+
+        if ($list['data']['error_code']) {
+            return $list['data'];
+        }
+        $item_ids = [];
+        foreach ($list['data']['list'] as $k => &$v) {
+            $params['item_id'] = $v['item_id'];
+
+            $params['url'] = 'like';
+            $res = (new DouYin())->getBaseData($params)['data'];
+            if (!$res['error_code']) {
+                $v['like_data'] = (new DouYin())->getBaseData($params)['data']['result_list'];
+            } else {
+                $v['like_data'] = [];
+            }
+
+            $params['url'] = 'comment';
+            $res = (new DouYin())->getBaseData($params)['data'];
+            if (!$res['error_code']) {
+                $v['comment_data'] = (new DouYin())->getBaseData($params)['data']['result_list'];
+            } else {
+                $v['comment_data'] = [];
+            }
+
+            $params['url'] = 'play';
+            $res = (new DouYin())->getBaseData($params)['data'];
+            if (!$res['error_code']) {
+                $v['play_data'] = (new DouYin())->getBaseData($params)['data']['result_list'];
+            } else {
+                $v['play_data'] = [];
+            }
+
+            $params['url'] = 'share';
+            $res = (new DouYin())->getBaseData($params)['data'];
+            if (!$res['error_code']) {
+                $v['share_data'] = (new DouYin())->getBaseData($params)['data']['result_list'];
+            } else {
+                $v['share_data'] = [];
+            }
+        }
+        return $list['data']['list'];
+    }
+
+    /**
+     * 抖音获取用户数据
+     */
+    public function getUserData($params)
+    {
+        $data = [];
+        $params['url'] = 'item';
+        $data['item'] = (new DouYin())->getUserBaseData($params);
+
+        $params['url'] = 'fans';
+        $data['fans'] = (new DouYin())->getUserBaseData($params);
+
+        $params['url'] = 'like';
+        $data['like'] = (new DouYin())->getUserBaseData($params);
+
+        $params['url'] = 'comment';
+        $data['comment'] = (new DouYin())->getUserBaseData($params);
+
+        $params['url'] = 'share';
+        $data['share'] = (new DouYin())->getUserBaseData($params);
+
+        $params['url'] = 'profile';
+        $data['profile'] = (new DouYin())->getUserBaseData($params);
+
+        return $data;
     }
 
     /**
@@ -180,14 +381,14 @@ class Client
         }
 
         //上传封面图
-        $res=(new WeChat())->uploadMedia($params);
-        $params['thumb_media_id']=$res['media_id'];//封面图的media_id
+        $res = (new WeChat())->uploadMedia($params);
+        $params['thumb_media_id'] = $res['media_id'];//封面图的media_id
 
         //创建草稿
-        $res=(new WeChat())->createDraft($params);
-        $params['media_id']=$res['media_id'];//草稿的media_id
+        $res = (new WeChat())->createDraft($params);
+        $params['media_id'] = $res['media_id'];//草稿的media_id
 
-        $res=(new WeChat())->publish($params);
+        $res = (new WeChat())->publish($params);
         return $res;
     }
 }

@@ -51,7 +51,20 @@ class KuaiShou
         return json_decode($res->body, true);
     }
 
-    public function refreshAccessToken()
+    public function getUserInfo($params)
+    {
+        if (!isset($params['appId']) || empty($params['appId'])) {
+            return 'appId不能为空';
+        }
+        if (!isset($params['accessToken']) || empty($params['accessToken'])) {
+            return 'accessToken不能为空';
+        }
+        $url = Config::KuaiShow_HOST . '/openapi/user_info?app_id=' . $params['appId'] . '&access_token=' . $params['accessToken'];
+        $res = Client::get($url);
+        return json_decode($res->body, true);
+    }
+
+    public function refreshAccessToken($params)
     {
         if (!isset($params['appId']) || empty($params['appId'])) {
             return 'appId不能为空';
@@ -91,19 +104,15 @@ class KuaiShou
         if (!isset($params['file']) || empty($params['file'])) {
             return 'file不能为空';
         }
+        if (!isset($params['fileSize']) || empty($params['fileSize'])) {
+            return 'fileSize不能为空';
+        }
         $maxFileSize = 1048576 * 5;
-//        $fileSize=$params['file']->getSize();
-        $fileSize=$this->getVideoSize($params['file']);
 
-        $save_to = dirname(dirname(__DIR__)) . '/1.mp4';
-        $content = file_get_contents($params['file']);
-        file_put_contents($save_to, $content);
-        $params['file']=$save_to;
-
-        if ($fileSize < $maxFileSize) {//文件小于5M直接上传文件
+        if ($params['fileSize'] < $maxFileSize) {//文件小于5M直接上传文件
             $url = 'http://' . $params['endpoint'] . '/api/upload/multipart?upload_token=' . $params['uploadToken'];
             $body = [
-                'file' => $params['file']
+                'file' => new \CURLFile($params['file'])
             ];
             $res = Client::post($url, $body);
             return json_decode($res->body, true);
@@ -205,11 +214,20 @@ class KuaiShou
             return 'accessToken不能为空';
         }
         $url = Config::KuaiShow_HOST . '/openapi/photo/list?access_token=' . $params['accessToken'] . '&app_id=' . $params['appId'];
+
+        if(isset($params['count'])&&!empty(isset($params['count']))){
+            $url.='&count='.$params['count'];
+        }
+        if(isset($params['cursor'])&&!empty(isset($params['cursor']))){
+            $url.='&cursor='.$params['cursor'];
+        }
+
         $res = Client::get($url);
         return json_decode($res->body, true);
     }
 
-    public function getVideoSize($videoUrl) {
+    public function getVideoSize($videoUrl)
+    {
         $headers = get_headers($videoUrl, true);
 
         if (strpos($headers[0], '200') === false) {
@@ -218,7 +236,6 @@ class KuaiShou
         $contentLength = isset($headers['Content-Length']) ? intval($headers['Content-Length']) : 0;
         return $contentLength;
     }
-
 
 
 }
