@@ -20,7 +20,7 @@ class DouYin
         if (!isset($params['redirectUri']) || empty($params['redirectUri'])) {
             return 'redirectUri不能为空';
         }
-        $url = Config::DouYin_HOST . '/platform/oauth/connect/?client_key=' . $params['clientKey'] . '&response_type=code&scope=user_info,video.create.bind,video.data.bind,video.list.bind,data.external.item&redirect_uri=' . $params['redirectUri'] . '&state=STATE';
+        $url = Config::DouYin_HOST . '/platform/oauth/connect/?client_key=' . $params['clientKey'] . '&response_type=code&scope=user_info,video.create.bind,video.data.bind,video.list.bind,data.external.item,data.external.user,fans.data.bind,data.external.fans_source,data.external.fans_favourite&redirect_uri=' . $params['redirectUri'] . '&state=STATE';
         header("Location: $url");
         exit();
     }
@@ -287,13 +287,19 @@ class DouYin
 
     public function getVideo($params)
     {
+
         if (!isset($params['openId']) || empty($params['openId'])) {
             return 'openId不能为空';
         }
         if (!isset($params['accessToken']) || empty($params['accessToken'])) {
             return 'accessToken不能为空';
         }
-        $url = Config::DouYin_HOST . '/api/douyin/v1/video/video_list/?open_id=' . $params['openId'] .'&count=10';
+
+        $params['count']=$params['count']??10;
+        $params['cursor']=$params['cursor']??0;
+
+        $url = Config::DouYin_HOST . '/api/douyin/v1/video/video_list/?open_id=' . $params['openId'].'&cursor='.$params['cursor'].'&count='.$params['count'];
+
         $header = [
             'access-token' => $params['accessToken']
         ];
@@ -374,7 +380,7 @@ class DouYin
             'access-token' => $params['accessToken']
         ];
         $res = json_decode(Client::get($url, $header)->body, true);
-        if(!$res['data']['error_code']){
+        if($res['data']['error_code']){
             return $res['data'];
         }else{
             return $res['data']['result_list'];
@@ -447,6 +453,7 @@ class DouYin
             'access-token' => $params['accessToken']
         ];
         $res = Client::get($url, $header);
-        return json_decode($res->body, true);
+        $res=json_decode($res->body, true);
+        return $res;
     }
 }

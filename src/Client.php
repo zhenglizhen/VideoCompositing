@@ -68,7 +68,19 @@ class Client
                 return (new KuaiShou())->getUserInfo($params);
                 break;
             case 'douyin':
-                return (new DouYin())->getUserInfo($params);
+                $data = [];
+
+                //用户粉丝数
+                $params['url'] = 'fans';
+                $res = (new DouYin())->getUserBaseData($params);
+                $res = array_reverse($res);
+                $data['fans'] = $res[0]['total_fans'];
+
+                $res = (new DouYin())->getUserInfo($params);
+                $data['avatar'] = $res['data']['avatar'];
+                $data['nickname'] = $res['data']['nickname'];
+                $data['open_id'] = $res['data']['open_id'];
+                return $data;
             default:
                 return '正在开发中';
         }
@@ -158,6 +170,24 @@ class Client
         return (new KuaiShou())->releaseVideo($params);
     }
 
+    public function getVideoData2($params)
+    {
+        $res=(new KuaiShou())->getVideo($params);
+        if($res['result']!=1){
+            return $res;
+        }
+        $data['count']=count($res['video_list']);
+        $data['like_count']=0;
+        $data['comment_count']=0;
+        $data['view_count']=0;
+        foreach ($res['video_list'] as $v){
+            $data['like_count']=$data['like_count']+$v['like_count'];
+            $data['comment_count']=$data['comment_count']+$v['comment_count'];
+            $data['view_count']=$data['view_count']+$v['view_count'];
+        }
+        return $data;
+    }
+
     /**
      * 抖音创建图文
      * @param $params
@@ -222,7 +252,35 @@ class Client
 
     public function getBaseData($params)
     {
-        return (new DouYin())->getBaseData($params);
+        $data = [];
+        $params['url'] = 'like';
+        $res = (new DouYin())->getBaseData($params)['data'];
+        if ($res['error_code']) {
+            return $res['description'];
+        }
+        $data['like'] = $res['result_list'];
+
+        $params['url'] = 'comment';
+        $res = (new DouYin())->getBaseData($params)['data'];
+        if ($res['error_code']) {
+            return $res['description'];
+        }
+        $data['comment'] = $res['result_list'];
+
+        $params['url'] = 'play';
+        $res = (new DouYin())->getBaseData($params)['data'];
+        if ($res['error_code']) {
+            return $res['description'];
+        }
+        $data['play'] = $res['result_list'];
+
+        $params['url'] = 'share';
+        $res = (new DouYin())->getBaseData($params)['data'];
+        if ($res['error_code']) {
+            return $res['description'];
+        }
+        $data['share'] = $res['result_list'];
+        return $data;
     }
 
     /**
@@ -277,41 +335,28 @@ class Client
     }
 
     /**
-     * 抖音获取用户数据、粉丝画像
+     * 抖音获取用户数据
      */
     public function getUserData($params)
     {
-        $data=[];
-        $params['url']='item';
-        $data['item']=(new DouYin())->getUserBaseData($params);
+        $data = [];
+        $params['url'] = 'item';
+        $data['item'] = (new DouYin())->getUserBaseData($params);
 
-        $params['url']='fans';
-        $data['fans']=(new DouYin())->getUserBaseData($params);
+        $params['url'] = 'fans';
+        $data['fans'] = (new DouYin())->getUserBaseData($params);
 
-        $params['url']='like';
-        $data['like']=(new DouYin())->getUserBaseData($params);
+        $params['url'] = 'like';
+        $data['like'] = (new DouYin())->getUserBaseData($params);
 
-        $params['url']='comment';
-        $data['comment']=(new DouYin())->getUserBaseData($params);
+        $params['url'] = 'comment';
+        $data['comment'] = (new DouYin())->getUserBaseData($params);
 
-        $params['url']='share';
-        $data['share']=(new DouYin())->getUserBaseData($params);
+        $params['url'] = 'share';
+        $data['share'] = (new DouYin())->getUserBaseData($params);
 
-        $params['url']='profile';
-        $data['profile']=(new DouYin())->getUserBaseData($params);
-
-
-        $params['url']='data';
-        $data['fans_data']=(new DouYin())->getFansBaseData($params);
-
-        $params['url']='source';
-        $data['fans_source']=(new DouYin())->getFansBaseData($params);
-
-        $params['url']='favourite';
-        $data['fans_favourite']=(new DouYin())->getFansBaseData($params);
-
-        $params['url']='comment';
-        $data['fans_comment']=(new DouYin())->getFansBaseData($params);
+        $params['url'] = 'profile';
+        $data['profile'] = (new DouYin())->getUserBaseData($params);
 
         return $data;
     }

@@ -90,6 +90,13 @@
         $uploadToken = '****';
         $endpoint = "****";
 
+        //$file = 'https://myy-one-stand.oss-cn-beijing.aliyuncs.com/list/2033/202307/1689735980720.mp4';
+       // $fileSize = $video->getVideoSize($file);
+        //$save_to = app()->getRootPath() . '/public/code/1.mp4';
+        //$content = file_get_contents($file);
+        //file_put_contents($save_to, $content);
+        //$file = $save_to;
+
         $video = new Client($this->appName);
         $params = [
             'endpoint' => $endpoint,
@@ -132,14 +139,16 @@
 
         $video->releaseVideo($params);
     }
-    //获取授权用户所发布的视频列表
+    //获取授权用户所发布的视频列表(需分页)
     public function getVideo()
     {
         $accessToken = '';
         $video = new Client($this->appName);
         $params = [
             'appId' => $this->appId,
-            'accessToken' => $accessToken
+            'accessToken' => $accessToken,
+            'count' => 10,//每页条数
+            'cursor' => 0//第一页为0,分页查询时，传上一页create_time最小的photo_id
         ];
         $video->getVideo($params);
     }
@@ -217,7 +226,7 @@
         $res = $video->getAccessToken($params);
     }
 
-    //获取用户信息
+    //获取用户基本信息和粉丝数
     public function getUserInfo()
     {
         $accessToken = '****';
@@ -372,7 +381,7 @@
         var_dump($res);
     }
 
-    //获取用户的视频、粉丝、点赞等数据和粉丝来源数据
+    //获取近7/15/30天的用户数据（播放量，点赞量，评论数，粉丝数，分享数，主页访问数）
     public function getUserData()
     {
         $video = new Client($this->appName);
@@ -387,7 +396,8 @@
         var_dump($res);
     }
 
-    //获取用户发布的视频列表
+    //获取用户发布的视频列表（类型，封面，视频播放页面，是否置顶，创建时间，点赞数、下载数、分享数、播放数、评论数）
+    //返回数据中的has_more可以判定是否有更多的数据
     public function getVideo()
     {
         $video = new Client($this->appName);
@@ -396,12 +406,14 @@
         $params = [
             'accessToken' => $accessToken,
             'openId' => $openId,
+            'cursor' => 0,//分页游标，第一页为0，下一页为上一页返回的cursor；
+            'count'=>10, //每页条数
         ];
         $res = $video->getVideo($params);
     }
     
 
-    //获取多个视频的视频详情，评论数、点赞数、下载数、分享数等数据
+    //获取多个视频的视频详情，评论数、点赞数、下载数等数据
     public function getVideoDetail()
     {
         $video = new Client($this->appName);
@@ -417,8 +429,9 @@
         var_dump($res);
     }
 
-    //获取近*天的数据
-    public function getBaseData()
+    //获取某个视频的近7/15/30天的点赞、评论、分享、播放数据
+    //like：点赞数据；comment：评论数据；play：播放数据；share：分享数据；
+    public function getVideoData()
     {
         $video = new Client($this->appName);
         $accessToken = '****';
@@ -428,7 +441,6 @@
             'accessToken' => $accessToken,
             'item_id' => $item_id,
             'openId' => $openId,
-            'url'=>'base',//base:近三十天的数据（与date_type无关）；like：近date_type天的点赞数据；comment：近date_type天的评论数据；play：近date_type天的播放数据；share：近date_type天的分享数据；
             'date_type'=>7,//7/15
         ];
         $res = $video->getBaseData($params);

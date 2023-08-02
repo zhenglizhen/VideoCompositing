@@ -214,6 +214,14 @@ class KuaiShou
             return 'accessToken不能为空';
         }
         $url = Config::KuaiShow_HOST . '/openapi/photo/list?access_token=' . $params['accessToken'] . '&app_id=' . $params['appId'];
+
+        if(isset($params['count'])&&!empty(isset($params['count']))){
+            $url.='&count='.$params['count'];
+        }
+        if(isset($params['cursor'])&&!empty(isset($params['cursor']))){
+            $url.='&cursor='.$params['cursor'];
+        }
+
         $res = Client::get($url);
         return json_decode($res->body, true);
     }
