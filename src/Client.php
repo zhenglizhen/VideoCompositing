@@ -172,18 +172,18 @@ class Client
 
     public function getVideoData2($params)
     {
-        $res=(new KuaiShou())->getVideo($params);
-        if($res['result']!=1){
+        $res = (new KuaiShou())->getVideo($params);
+        if ($res['result'] != 1) {
             return $res;
         }
-        $data['count']=count($res['video_list']);
-        $data['like_count']=0;
-        $data['comment_count']=0;
-        $data['view_count']=0;
-        foreach ($res['video_list'] as $v){
-            $data['like_count']=$data['like_count']+$v['like_count'];
-            $data['comment_count']=$data['comment_count']+$v['comment_count'];
-            $data['view_count']=$data['view_count']+$v['view_count'];
+        $data['count'] = count($res['video_list']);
+        $data['like_count'] = 0;
+        $data['comment_count'] = 0;
+        $data['view_count'] = 0;
+        foreach ($res['video_list'] as $v) {
+            $data['like_count'] = $data['like_count'] + $v['like_count'];
+            $data['comment_count'] = $data['comment_count'] + $v['comment_count'];
+            $data['view_count'] = $data['view_count'] + $v['view_count'];
         }
         return $data;
     }
@@ -359,6 +359,12 @@ class Client
         $data['profile'] = (new DouYin())->getUserBaseData($params);
 
         return $data;
+    }
+
+    public function getFansData($params)
+    {
+        $params['url']='data';
+        return (new DouYin())->getFansBaseData($params);
     }
 
     /**
